@@ -1,0 +1,52 @@
+﻿@model ProfileForm
+@{
+    ViewData["Title"] = "Edit";
+}
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+
+    <div class="row">
+       
+        <div class="col-md-4">
+            <form method="post" enctype="multipart/form-data" asp-area="Auth" asp-controller="Profile" asp-action="Edit">
+            <div class="card">
+                <div class="card-header"></div>
+                   
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    @Html.LabelFor(x => x.FullName, new { @class = "form-label" })
+                                    @Html.TextBoxFor(x => x.FullName, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(x => x.FullName, null, new { @class = "text-danger" })
+                                </div>
+                                <div class="mb-3">
+                                    @Html.LabelFor(x => x.Phone, new { @class = "form-label" })
+                                    @Html.TextBoxFor(x => x.Phone, new { @class = "form-control"})
+                                    @Html.ValidationMessageFor(x => x.Phone, null, new { @class = "text-danger" })
+                                </div>
+                                <div class="mb-3">
+                                    @Html.LabelFor(x => x.Image, new { @class = "form-label" })
+                                    @Html.TextBoxFor(x => x.Image, new { @class = "form-control", type = "file", accept = "*.jpg,*.jpeg,*.png" })
+                                    @Html.ValidationMessageFor(x => x.Image, null, new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-primary" type="submit">Save</button>
+                                <a asp-area="Auth"
+                                asp-controller="Profile"
+                                asp-action="Index" 
+                                class="btn btn-outline-success">Return</a>
+                            </div>
+
+                            <div class="card-footer">
+                             <a asp-area="Auth"
+                            asp-controller="Account"
+                            asp-action="ChangePassword"
+                             class="btn btn-outline-warning">Change Password</a>
+                            </div>
+
+
+                    </form>
+            </div>
+        </div
+    </div>

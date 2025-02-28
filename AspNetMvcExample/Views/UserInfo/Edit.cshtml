@@ -1,0 +1,138 @@
+﻿@model UserInfoForm
+@{
+    ViewData["Title"] = "Edit " + Model.Name;
+
+    var i = 0;
+    var list = new SelectList(Model
+        .Professions
+        .Select(x => new { Id = i++, Title = x })
+        .ToList(), "Id", "Title");
+
+    var userSkills = ViewData["userSkills"] as List<UserSkill>;
+    var skills = ViewData["skills"] as List<Skill>;
+    var availableSkills = ViewData["availableSkills"] as List<Skill>;
+}
+    <div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <form method="post" enctype="multipart/form-data" asp-controller="UserInfo" asp-action="Edit" asp-route-id="@ViewData["id"]">
+        <div class="card">
+            <div class="card-body">
+                @await Html.PartialAsync("_UserInfoFormField", Model, new ViewDataDictionary(ViewData) { { "professions", list } })
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+        </div>
+    </form>
+
+    <div>
+        <table class="table table-hover" data-user-id="@ViewData["id"]">
+            <thead></thead>
+            <tbody>
+                @if (userSkills != null && userSkills.Any())
+                {
+                    @foreach (var userSkill in userSkills)
+                    {
+                        <tr data-model-id="@userSkill.Id">
+                            <td>
+                                @if (userSkill.Skill.ImageFile != null)
+                                {
+                                    <img style="max-width: 50px;" class="img-thumbnail" src="@userSkill.Skill.ImageFile.Src" />
+                                }
+                            </td>
+                            <td>@userSkill.Skill.Title</td>
+                            <td>@userSkill.Level</td>
+                            <td><button class="btn btn-danger delete-skill">Remove</button></td>
+                        </tr>
+                    }
+                }
+
+                @foreach (var skill in availableSkills)
+                {
+                    <tr data-model-id="@skill.Id">
+                        <td>
+                            @if (skill.ImageFile != null)
+                            {
+                                <img style="max-width: 50px;" class="img-thumbnail" src="@skill.ImageFile.Src" />
+                            }
+                        </td>
+                        <td>
+                            @skill.Title
+                        </td>
+                        <td>
+                            <input class="skill-level" type="number" min="1" max="100" value="0" />
+                        </td>
+                        <td>
+                            <button class="btn btn-success add-skill">Add</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+
+    <a asp-area=""
+       asp-controller="UserInfo"
+       asp-action="Index"
+       class="btn btn-outline-success">Return</a>
+</div> 
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".add-skill").forEach(el => {
+
+            el.addEventListener("click", e => {
+                const skillId = e.target.closest("[data-model-id]").getAttribute("data-model-id")
+                const userId = e.target.closest("[data-user-id]").getAttribute("data-user-id")
+                const level = e.target.closest("[data-model-id]").querySelector("input.skill-level").value
+
+                const data = {
+                    skillId: skillId,
+                    level: level
+                }
+                console.log(data)
+
+                fetch(`/UserInfo/AddSkill/${userId}`, {
+                    method: "post",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                }).then(() => {
+                    window.location.reload()
+                })
+                    .catch(err => {
+                        console.log(err)
+                    })
+
+
+            })
+
+        })
+
+
+        document.querySelectorAll(".delete-skill").forEach(el => {
+
+            el.addEventListener("click", e => {
+                const id = e.target.closest("[data-model-id]").getAttribute("data-model-id")
+
+                fetch(`/UserInfo/DeleteSkill/${id}`, {
+                    method: "delete",
+                }).then(() => {
+                    window.location.reload()
+                })
+                    .catch(err => {
+                        console.log(err)
+                    })
+
+
+            })
+
+        })
+    </script>
+}

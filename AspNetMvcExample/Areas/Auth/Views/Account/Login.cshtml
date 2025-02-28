@@ -1,0 +1,42 @@
+﻿@using AspNetMvcExample.Areas.Auth.Models.Forms
+@model LoginForm
+@{
+    ViewData["Title"] = "Login";
+}
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <form method="post" enctype="multipart/form-data" 
+    asp-area ="Auth" 
+    asp-controller="Account" 
+    asp-action="Login"
+          asp-route-ReturnUrl="@Context.Request.Query["ReturnUrl"]">
+        <div class="card">
+            <div class="card-body">
+                <div class="mb-3">
+                    @Html.LabelFor(x => x.Login, new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.Login, new { @class = "form-control", type = "email" })
+                    @Html.ValidationMessageFor(x => x.Login, null, new { @class = "text-danger" })
+                </div>
+                <div class="mb-3">
+                    @Html.LabelFor(x => x.Password, new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.Password, new { @class = "form-control", type = "password" })
+                    @Html.ValidationMessageFor(x => x.Password, null, new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Login</button>
+                <a asp-area="Auth"
+                   asp-controller="Account"
+                   asp-action="Register"
+                   asp-route-ReturnUrl="@Context.Request.Query["ReturnUrl"]"
+                   class="btn btn-outline-success">Registration</a>
+            </div>
+        </div>
+    </form>
+
+
+
+
+
+</div>

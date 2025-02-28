@@ -1,0 +1,7 @@
+﻿@model ImageFile
+@{
+    var maxWidth = ViewData["maxWidth"] ?? "400px";
+    var borderColor = ViewData["borderColor"] ?? "transparent";
+}
+
+<img style="max-width: @maxWidth; border: 1px solid @borderColor " class="img-thumbnail" src="@Model.Src" />

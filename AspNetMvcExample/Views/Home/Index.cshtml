@@ -1,0 +1,109 @@
+﻿@model IEnumerable<AspNetMvcExample.Models.UserInfo>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Hello world!</h1>
+</div>
+
+<div class="card p-3 mt-4">
+    <h5 class="text-center mb-3">🔍 Advanced Search 🔍</h5>
+    <form class="row g-3 justify-content-center">
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="search-text" placeholder="Search users"
+                       value="@Context.Request.Query["searchText"]" />
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <select class="form-select" id="profession-options">
+                <option value="">All Professions</option>
+                @foreach (var profession in ViewBag.Professions)
+                {
+                    <option value="@profession" selected="@(Context.Request.Query["profession"] == profession ? "selected" : null)">
+                        @profession
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select class="form-select" id="skill-options">
+                <option value="">All Skills</option>
+                @foreach (var skill in ViewBag.Skills)
+                {
+                    <option value="@skill" selected="@(Context.Request.Query["skill"] == skill ? "selected" : null)">
+                        @skill
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select class="form-select" id="experience-options">
+                <option value="">All Experience</option>
+                <option value="0" selected="@(Context.Request.Query["experienceRange"] == "0" ? "selected" : null)">0</option>
+                <option value="1-2" selected="@(Context.Request.Query["experienceRange"] == "1-2" ? "selected" : null)">1-2</option>
+                <option value="3-5" selected="@(Context.Request.Query["experienceRange"] == "3-5" ? "selected" : null)">3-5</option>
+                <option value="5+" selected="@(Context.Request.Query["experienceRange"] == "5+" ? "selected" : null)">5+</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select class="form-select" id="age-options">
+                <option value="">All Ages</option>
+                <option value="0-18" selected="@(Context.Request.Query["ageRange"] == "0-18" ? "selected" : null)">0-18</option>
+                <option value="19-25" selected="@(Context.Request.Query["ageRange"] == "19-25" ? "selected" : null)">19-25</option>
+                <option value="26-35" selected="@(Context.Request.Query["ageRange"] == "26-35" ? "selected" : null)">26-35</option>
+                <option value="36+" selected="@(Context.Request.Query["ageRange"] == "36+" ? "selected" : null)">36+</option>
+            </select>
+        </div>
+
+        <div class="col-12 text-center mt-2">
+            <button type="button" class="btn btn-primary mx-1" id="find-btn"><i class="bi bi-funnel"></i> Find</button>
+            <button type="button" class="btn btn-outline-secondary mx-1" id="clear-btn"><i class="bi bi-x-circle"></i> Clear</button>
+        </div>
+    </form>
+</div>
+
+<div class="row mt-4">
+    @foreach (var user in Model)
+    {
+        <div class="col-md-3 mb-3">
+            @await Html.PartialAsync("_UserInfoCard", user)
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('find-btn').addEventListener('click', function () {
+            var searchText = document.getElementById('search-text').value;
+            var profession = document.getElementById('profession-options').value;
+            var skill = document.getElementById('skill-options').value;
+            var experience = document.getElementById('experience-options').value;
+            var age = document.getElementById('age-options').value;
+
+            window.location.href = '@Url.Action("Index", "Home")' +
+                '?searchText=' + encodeURIComponent(searchText) +
+                '&profession=' + encodeURIComponent(profession) +
+                '&skill=' + encodeURIComponent(skill) +
+                '&experienceRange=' + encodeURIComponent(experience) +
+                '&ageRange=' + encodeURIComponent(age);
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', function () {
+            document.getElementById('search-text').value = '';
+            document.getElementById('profession-options').value = '';
+            document.getElementById('skill-options').value = '';
+            document.getElementById('experience-options').value = '';
+            document.getElementById('age-options').value = '';
+
+            window.location.href = '@Url.Action("Index", "Home")';
+        });
+    </script>
+}

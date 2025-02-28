@@ -1,0 +1,48 @@
+﻿@model User
+@{
+    ViewData["Title"] = "Profile";
+}
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"></div>
+                <div class="card-body">
+                    @if (Model.Image != null)
+                    {
+                        <div class="avatar" style="background-image: url(@Model.Image.Src);"></div>
+                    }
+
+                    <div><h5>@Model.FullName</h5></div>
+
+                    <div>
+                        <div class="small text-muted">
+                            Email
+                            <div>@Model.Email</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="small text-muted">
+                            Phone
+                            <div>@Model.PhoneNumber</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer d-flex gap-2">
+                    <a asp-area="Auth" asp-controller="Profile" asp-action="Edit" class="btn btn-outline-success">Edit</a>
+
+                    <form method="post" asp-area="Auth" asp-controller="Profile" asp-action="DeleteAccount" onsubmit="return confirm('Are you sure you want to delete your account?');" class="flex-grow-1">
+                        <button type="submit" class="btn btn-outline-danger w-100">Delete Account</button>
+                    </form>
+
+                    <a class="btn btn-outline-success" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

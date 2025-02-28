@@ -1,0 +1,81 @@
+﻿@model List<UserInfo>
+@{
+    ViewData["Title"] = "List of user info";
+}
+<div>
+
+    <h1>@ViewData["Title"]</h1>
+    <a 
+        asp-controller="UserInfo"
+        asp-action="Create"
+    class="btn btn-success"    
+    >Create</a>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Професія</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>
+                        @* @if (item.ImageFile != null) {
+                            <img style="max-width: 200px;" class="img-thumbnail" src="/uploads/@item.ImageFile" />
+                        } *@
+                        @if (item.ImageFiles.Count > 0)
+                        {
+                            <div style="display: flex;">
+                                @foreach (var galleryItem in item.ImageFiles)
+                                {
+                                    @await Html.PartialAsync("_ImageComponent", galleryItem, new ViewDataDictionary(ViewData)
+                                    {
+                                    {"maxWidth", "100px"},
+                                    {"borderColor", "grey"}
+                                    })
+
+                                   @*  <img style="max-width: 200px;" class="img-thumbnail" src="@galleryItem.Src" /> *@
+                                }
+                            </div>
+                        }
+                    </td>
+                    <td>@item.Name</td>
+                    <td>@item.Email</td>
+                    <td>@item.Profession</td>
+                    <td>
+                        <a asp-area=""
+                           asp-controller="UserInfo"
+                           asp-action="View"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">View</a>
+
+                        <a asp-area=""
+                           asp-controller="UserInfo"
+                           asp-action="Edit"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">Edit</a>
+
+@*                         <a asp-area=""
+                           asp-controller="UserInfo"
+                           asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">Delete</a> *@
+
+                        <form asp-area="" asp-controller="UserInfo" asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+</div>

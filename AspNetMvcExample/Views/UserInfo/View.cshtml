@@ -1,0 +1,89 @@
+﻿@model UserInfo
+@{
+    ViewData["Title"] = Model.Name;
+
+    ImageFile? mainImage = Model.MainImageFile;
+    if (Model.MainImageFile == null)
+    {
+        mainImage = Model.ImageFiles.FirstOrDefault();
+    }
+}
+
+<div class="container my-5 bg-light p-4 rounded-lg shadow-lg">
+    <h1 class="display-4 text-center text-primary mb-4">Hello @Model.Name</h1>
+    <div class="mb-3">
+        <h3 class="text-muted">Email: <span class="text-dark">@Model.Email</span></h3>
+    </div>
+    <div class="mb-3">
+        <strong>ID:</strong> <span class="text-dark">@Model.Id</span>
+    </div>
+    <div class="mb-4">
+        <strong>Професія:</strong> <span class="text-dark">@Model.Profession</span>
+    </div>
+    <div class="mb-4">
+        <strong>Опит:</strong> <span class="text-dark">@Model.ExpirienseYears</span>
+    </div>
+    <div class="mb-4">
+        <strong>Дата народження:</strong> <span class="text-dark">@Model.Birthday.ToString("dd.MM.yyyy")</span>
+    </div>
+
+    <div class="text-center mb-4">
+        <strong class="d-block mb-2">Main Image</strong>
+        @if (mainImage != null)
+        {
+            @await Html.PartialAsync("_ImageComponent", mainImage, new ViewDataDictionary(ViewData)
+        {
+        {"maxWidth", "600px"},
+        {"borderColor", "red"}
+        })
+        }
+    </div>
+
+    @if (Model.ImageFiles.Count > 0)
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            @foreach (var galleryItem in Model.ImageFiles.Where(x => x.Src != mainImage?.Src).ToList())
+            {
+                <div class="col">
+                    <div class="position-relative rounded-lg overflow-hidden shadow-sm bg-white">
+                        @await Html.PartialAsync("_ImageComponent", galleryItem, new ViewDataDictionary(ViewData)
+                {
+                {"maxWidth", "300px"},
+                {"borderColor", "green"}
+                })
+
+                        <button data-id="@Model.Id" data-image-id="@galleryItem.Id" class="btn btn-sm btn-outline-success position-absolute top-0 end-0 m-2 set-main-image shadow-sm">
+                            Set Main
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="mt-4 text-center">
+        <a asp-area=""
+           asp-controller="UserInfo"
+           asp-action="Index"
+           class="btn btn-outline-primary btn-lg py-3 px-5 rounded-pill hover-shadow">Return</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".set-main-image").forEach(el => {
+            el.addEventListener("click", e => {
+                console.log("click on set main image button");
+                const itemId = e.target.getAttribute("data-id");
+                const imageId = e.target.getAttribute("data-image-id");
+                console.log(imageId);
+                console.log(itemId);
+
+                fetch(`/UserInfo/ChangeMainImage/${itemId}?imageId=${imageId}`)
+                    .then(() => {
+                        window.location.reload();
+                    })
+            })
+        })
+    </script>
+}

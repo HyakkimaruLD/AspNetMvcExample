@@ -1,0 +1,32 @@
+﻿@model UserInfoForm
+@{
+    ViewData["Title"] = "Create User Info";
+
+    var i = 0;
+    var list = new SelectList(Model.Professions
+        .Select(x => new { Id = i++, Title = x })
+        .ToList(), "Id", "Title");
+
+}
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <form method="post" enctype="multipart/form-data" asp-controller="UserInfo" asp-action="Create">
+        <div class="card">
+            <div class="card-body">
+                @await Html.PartialAsync("_UserInfoFormField", Model, new ViewDataDictionary(ViewData) { { "professions", list } })
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+        </div>
+    </form>
+
+
+
+
+    <a asp-area=""
+       asp-controller="UserInfo"
+       asp-action="Index"
+       class="btn btn-outline-success">Return</a>
+</div>

@@ -1,0 +1,23 @@
+﻿@model UserInfo
+@{
+    ViewData["Title"] = "My Hello Page";
+}
+
+<div class="">
+    <input id="modelId" value="1" />
+    <button id="view">View</button>
+    <div id="result"></div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("view").addEventListener("click", async e => {
+
+            const id = document.getElementById("modelId").value
+
+            await fetch(`/UserInfo/ViewPartial/${id}`).then(x => x.text()).then(html => {
+                    document.getElementById("result").innerHTML = html
+                }
+        })
+    </script>
+}

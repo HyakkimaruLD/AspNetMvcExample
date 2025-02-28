@@ -1,0 +1,40 @@
+﻿@model SkillForm
+@{
+    ViewData["Title"] = "Edit skill";
+}
+<div>
+    <h1 class="display-4">@ViewData["Title"]</h1>
+
+    <form method="post" enctype="multipart/form-data" asp-controller="Skill" asp-action="Edit">
+        <div class="card">
+            <div class="card-body">
+                <div class="mb-3">
+                    @Html.LabelFor(x => x.Title, new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.Title, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(x => x.Title, null, new { @class = "text-danger" })
+                </div>
+                <div class="mb-3">
+                    @Html.LabelFor(x => x.Color, new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.Color, new { @class = "form-control form-control-color", type="color" })
+                    @Html.ValidationMessageFor(x => x.Color, null, new { @class = "text-danger" })
+                </div>
+                <div class="mb-3">
+                    @Html.LabelFor(x => x.Image, new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.Image, new { @class = "form-control", type = "file", accept = "*.jpg,*.jpeg,*.png" })
+                    @Html.ValidationMessageFor(x => x.Image, null, new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+        </div>
+    </form>
+
+
+
+
+    <a asp-area=""
+       asp-controller="Skill"
+       asp-action="Index"
+       class="btn btn-outline-success">Return</a>
+</div>
