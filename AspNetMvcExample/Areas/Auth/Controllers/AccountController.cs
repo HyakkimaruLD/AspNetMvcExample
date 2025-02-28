@@ -38,10 +38,8 @@ namespace AspNetMvcExample.Areas.Auth.Controllers
                 return View(form);
             }
 
-            // Добавляем роль "User" новому пользователю
             await userManager.AddToRoleAsync(user, "User");
 
-            // Авторизуем пользователя
             await signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Index", "Home", new { Area = "" });
         }
@@ -108,7 +106,7 @@ namespace AspNetMvcExample.Areas.Auth.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            await signInManager.SignInWithClaimsAsync(user, isPersistent: true, claims);
+           // await signInManager.SignInWithClaimsAsync(user, isPersistent: true, claims);
 
             return RedirectToAction("Index", "Home", new { Area = "" });
         }
