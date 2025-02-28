@@ -32,13 +32,16 @@ namespace AspNetMvcExample.Areas.Auth.Controllers
             };
 
             var result = await userManager.CreateAsync(user, form.Password);
-
             if (!result.Succeeded)
             {
                 ModelState.AddModelError(string.Empty, "Registration failed");
                 return View(form);
             }
 
+            // Добавляем роль "User" новому пользователю
+            await userManager.AddToRoleAsync(user, "User");
+
+            // Авторизуем пользователя
             await signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Index", "Home", new { Area = "" });
         }
@@ -77,12 +80,35 @@ namespace AspNetMvcExample.Areas.Auth.Controllers
                 return View(form);
             }
 
+            if (!await userManager.IsInRoleAsync(user, "User"))
+            {
+                await userManager.AddToRoleAsync(user, "User");
+            }
 
-            await signInManager.SignInWithClaimsAsync(user, true, [
+            var roles = await userManager.GetRolesAsync(user);
+            var claims = new List<Claim>
+            {
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("Avatar", user.Image?.Src ?? "")
-                ]);
+            };
+
+            //var userRoles:List<string> = await userManager.Get
+
+            //await signInManager.SignInWithClaimsAsync(user, true, [
+            //    new Claim(ClaimTypes.Email, user.Email),
+            //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            //    new Claim("Avatar", user.Image?.Src ?? ""),
+            //    new Claim(ClaimTypes.Role, "User")
+            //    ]);
+
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            await signInManager.SignInWithClaimsAsync(user, isPersistent: true, claims);
 
             return RedirectToAction("Index", "Home", new { Area = "" });
         }
@@ -94,12 +120,7 @@ namespace AspNetMvcExample.Areas.Auth.Controllers
             return RedirectToAction("Index", "Home", new { Area = "" });
         }
 
-
-
-
-
         //-------------------
-
 
         [Authorize]
         [HttpGet]

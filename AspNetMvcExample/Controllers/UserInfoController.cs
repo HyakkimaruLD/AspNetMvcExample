@@ -9,7 +9,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AspNetMvcExample.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin, User")]
+[Route(template:"user-infos-data/[action]/{id:int?}")]
 public class UserInfoController(
     ILogger<UserInfoController> logger,
     SiteContext context,
@@ -53,7 +54,7 @@ public class UserInfoController(
             );
     }
 
-    [HttpGet]
+    [HttpGet(template:"create-info")]
     public IActionResult Create()
     {
         var model = new UserInfoForm(new UserInfo());
@@ -96,7 +97,7 @@ public class UserInfoController(
         return RedirectToAction("Index");
     }
 
-    [HttpGet]
+    [HttpGet(template: "edit-info")]
     public async Task<IActionResult> Edit(int id)
     {
         ViewData["id"] = id;
