@@ -1,0 +1,89 @@
+﻿@model AspNetMvcExample.Areas.Auth.Models.Forms.EditUserRolesForm
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 550px; width: 100%;">
+        <div class="card-header bg-white border-0 text-center py-3">
+            <h3 class="fw-semibold text-primary">📝 Edit User</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="UserId" />
+
+                <div class="mb-3">
+                    <label asp-for="UserName" class="form-label fw-bold">Username</label>
+                    <input asp-for="UserName" class="form-control bg-light" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-bold">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label fw-bold">Phone</label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewPassword" class="form-label fw-bold">New Password</label>
+                    <input asp-for="NewPassword" type="password" class="form-control" />
+                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="image" class="form-label fw-bold">Upload Avatar</label>
+                    <input type="file" class="form-control" name="Image" id="image" accept="image/*" onchange="previewImage(event)">
+                    <div class="text-center mt-2">
+                        <img id="avatarPreview" src="#" class="rounded-circle border shadow-sm d-none" style="width: 100px; height: 100px; object-fit: cover;" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Roles</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var role in Model.AvailableRoles)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="SelectedRoles" value="@role"
+                                @(Model.SelectedRoles.Contains(role) ? "checked" : "") id="role-@role" />
+                                <label class="form-check-label badge bg-primary text-white px-3 py-2 rounded-pill" for="role-@role">
+                                    @role
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-primary rounded-3 px-4 shadow-sm">
+                        <i class="bi bi-check-lg"></i> Save Changes
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-3 px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function previewImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('avatarPreview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
