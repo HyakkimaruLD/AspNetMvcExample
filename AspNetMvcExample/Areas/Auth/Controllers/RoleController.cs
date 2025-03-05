@@ -73,9 +73,11 @@ namespace AspNetMvcExample.Areas.Auth.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(EditUserRolesForm form)
+        public async Task<IActionResult> Edit(EditUserRolesForm form, int id)
         {
-            var user = await userManager.FindByIdAsync(form.UserId.ToString());
+            //var user = await userManager.FindByIdAsync(form.UserId.ToString());
+
+            var user = await context.Users.Include(x => x.Image).FirstAsync(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
