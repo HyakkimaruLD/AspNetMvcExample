@@ -171,9 +171,14 @@ namespace AspNetMvcExample.Migrations
                     b.Property<decimal>("Salary")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MainImageFileId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserInfos");
                 });
@@ -367,7 +372,13 @@ namespace AspNetMvcExample.Migrations
                         .WithMany()
                         .HasForeignKey("MainImageFileId");
 
+                    b.HasOne("AspNetMvcExample.Models.User", "User")
+                        .WithMany("UserInfos")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("MainImageFile");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AspNetMvcExample.Models.UserSkill", b =>
@@ -453,6 +464,11 @@ namespace AspNetMvcExample.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AspNetMvcExample.Models.User", b =>
+                {
+                    b.Navigation("UserInfos");
                 });
 
             modelBuilder.Entity("AspNetMvcExample.Models.UserInfo", b =>

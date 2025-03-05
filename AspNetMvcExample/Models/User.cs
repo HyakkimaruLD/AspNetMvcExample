@@ -11,5 +11,8 @@ namespace AspNetMvcExample.Models
         public virtual ImageFile? Image { get; set; }
 
         //public virtual ICollection<UserInfo> Infos { get; set;  }
+
+        // Добавляем связь с информацией о пользователе
+        public virtual ICollection<UserInfo> UserInfos { get; set; }
     }
 }

@@ -2,60 +2,65 @@
 using AspNetMvcExample.Models.Forms;
 using AspNetMvcExample.Models.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AspNetMvcExample.Controllers;
 
-[Authorize(Roles = "Admin, User")]
-[Route(template:"user-infos-data/[action]/{id:int?}")]
-public class UserInfoController(
-    ILogger<UserInfoController> logger,
-    SiteContext context,
-    FileStorage fileStorage
-    ) : Controller
+//[Authorize(Roles = "Admin, User")]
+[Route(template: "user-infos-data/[action]/{id:int?}")]
+public class UserInfoController : Controller
 {
-    public IActionResult Index()
+    private readonly ILogger<UserInfoController> _logger;
+    private readonly SiteContext _context;
+    private readonly FileStorage _fileStorage;
+    private readonly UserManager<User> _userManager;
+
+    public UserInfoController(
+        ILogger<UserInfoController> logger,
+        SiteContext context,
+        FileStorage fileStorage,
+        UserManager<User> userManager
+    )
     {
-        return View(
-            context.UserInfos
+        _logger = logger;
+        _context = context;
+        _fileStorage = fileStorage;
+        _userManager = userManager;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+        var userInfos = isAdmin
+            ? await _context.UserInfos.Include(x => x.User).Include(x => x.MainImageFile).Include(x => x.ImageFiles).ToListAsync()
+            : await _context.UserInfos.Where(x => x.UserId == user.Id).Include(x => x.MainImageFile).Include(x => x.ImageFiles).ToListAsync();
+
+        return View(userInfos);
+    }
+
+    public async Task<IActionResult> View(int id)
+    {
+        var userInfo = await _context.UserInfos
             .Include(x => x.UserSkills)
             .ThenInclude(x => x.Skill)
             .Include(x => x.ImageFiles)
             .Include(x => x.MainImageFile)
-            .ToList()
-            );
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (userInfo == null || (!await IsAuthorized(userInfo)))
+        {
+            return Forbid();
+        }
+
+        return View(userInfo);
     }
 
-    public IActionResult View(int id) 
-    {
-        return View(
-            context.UserInfos
-            .Include(x => x.UserSkills)
-            .ThenInclude(x => x.Skill)
-            .Include(x => x.ImageFiles)
-            .Include(x => x.MainImageFile)
-            .First(x => x.Id == id)
-            );
-    }
-
-    public IActionResult ViewPartial(int id) 
-    {
-        return View(
-            "View",
-            context.UserInfos
-            .Include(x => x.UserSkills)
-            .ThenInclude(x => x.Skill)
-            .Include(x => x.ImageFiles)
-            .Include(x => x.MainImageFile)
-            .First(x => x.Id == id)
-            );
-    }
-
-    [HttpGet(template:"create-info")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
         var model = new UserInfoForm(new UserInfo());
         return View(model);
@@ -69,40 +74,37 @@ public class UserInfoController(
             return View(form);
         }
 
-        var model = new UserInfo();
+        var user = await _userManager.GetUserAsync(User);
+        var model = new UserInfo { UserId = user.Id };
         form.Update(model);
 
-        context.UserInfos.Add(model);
+        _context.UserInfos.Add(model);
 
         if (form.Gallery != null)
         {
             var imageFiles = new List<ImageFile>();
             foreach (var item in form.Gallery)
             {
-                var imageFile = await fileStorage.SaveAsync(item);
+                var imageFile = await _fileStorage.SaveAsync(item);
                 imageFiles.Add(imageFile);
             }
 
-            context.ImageFiles.AddRange(imageFiles);
-            
+            _context.ImageFiles.AddRange(imageFiles);
             imageFiles.ForEach(x => model.ImageFiles.Add(x));
-
 
             if (imageFiles.Any())
             {
                 model.MainImageFile = imageFiles.First();
             }
         }
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
         return RedirectToAction("Index");
     }
 
     [HttpGet(template: "edit-info")]
     public async Task<IActionResult> Edit(int id)
     {
-        ViewData["id"] = id;
-
-        var model = await context.UserInfos
+        var userInfo = await _context.UserInfos
             .Include(x => x.UserSkills)
             .ThenInclude(x => x.Skill)
             .ThenInclude(x => x.ImageFile)
@@ -110,22 +112,16 @@ public class UserInfoController(
             .Include(x => x.MainImageFile)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-        if (model == null)
+        if (userInfo == null || (!await IsAuthorized(userInfo)))
         {
-            return NotFound();
+            return Forbid();
         }
 
-        var form = new UserInfoForm(model);
-
-        var userSkills = model.UserSkills ?? new List<UserSkill>();
-
-        var skills = await context.Skills
-            .Include(x => x.ImageFile)
-            .ToListAsync();
-
-        var availableSkills = skills
-            .Where(x => !userSkills.Select(us => us.Skill.Id).Contains(x.Id))
-            .ToList();
+        ViewData["id"] = id;
+        var form = new UserInfoForm(userInfo);
+        var userSkills = userInfo.UserSkills ?? new List<UserSkill>();
+        var skills = await _context.Skills.Include(x => x.ImageFile).ToListAsync();
+        var availableSkills = skills.Where(x => !userSkills.Select(us => us.Skill.Id).Contains(x.Id)).ToList();
 
         ViewData["userSkills"] = userSkills;
         ViewData["skills"] = skills;
@@ -143,46 +139,49 @@ public class UserInfoController(
             return View(form);
         }
 
-        var model = await context.UserInfos
+        var userInfo = await _context.UserInfos
             .Include(x => x.UserSkills)
             .ThenInclude(x => x.Skill)
             .Include(x => x.ImageFiles)
             .Include(x => x.MainImageFile)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-        if (model == null)
+        if (userInfo == null || (!await IsAuthorized(userInfo)))
         {
-            return NotFound();
+            return Forbid();
         }
 
         if (form.Gallery != null)
         {
             foreach (var item in form.Gallery)
             {
-                var imageFile = await fileStorage.SaveAsync(item);
-                model.ImageFiles.Add(imageFile);
+                var imageFile = await _fileStorage.SaveAsync(item);
+                userInfo.ImageFiles.Add(imageFile);
             }
         }
 
-        form.Update(model);
-
-        await context.SaveChangesAsync();
+        form.Update(userInfo);
+        await _context.SaveChangesAsync();
 
         return RedirectToAction("Index");
     }
 
-
     public async Task<IActionResult> ChangeMainImage(int id, [FromQuery] int imageId)
     {
-        var model = await context.UserInfos
+        var userInfo = await _context.UserInfos
             .Include(x => x.UserSkills)
             .ThenInclude(x => x.Skill)
             .Include(x => x.ImageFiles)
             .Include(x => x.MainImageFile)
             .FirstAsync(x => x.Id == id);
 
-        model.MainImageFile = model.ImageFiles.First(x => x.Id == imageId);
-        await context.SaveChangesAsync();
+        if (userInfo == null || (!await IsAuthorized(userInfo)))
+        {
+            return Forbid();
+        }
+
+        userInfo.MainImageFile = userInfo.ImageFiles.First(x => x.Id == imageId);
+        await _context.SaveChangesAsync();
 
         return Json(new { Ok = true });
     }
@@ -190,11 +189,13 @@ public class UserInfoController(
     [HttpDelete]
     public async Task<IActionResult> DeleteSkill(int id)
     {
-        var userSkill = await context.UserSkills.FirstAsync(x => x.Id == id);
-        if (userSkill != null)
+        var userSkill = await _context.UserSkills.FirstAsync(x => x.Id == id);
+        var userInfo = await _context.UserInfos.FirstAsync(x => x.Id == userSkill.UserInfoId);
+
+        if (userSkill != null && (await IsAuthorized(userInfo)))
         {
-            context.UserSkills.Remove(userSkill);
-            await context.SaveChangesAsync();
+            _context.UserSkills.Remove(userSkill);
+            await _context.SaveChangesAsync();
         }
         return Json(new { Ok = true });
     }
@@ -202,54 +203,63 @@ public class UserInfoController(
     [HttpPost]
     public async Task<IActionResult> AddSkill(int id, [FromBody] UserSkillForm data)
     {
-        var user = await context.UserInfos
+        var userInfo = await _context.UserInfos
             .Include(x => x.UserSkills)
             .ThenInclude(x => x.Skill)
-            .FirstAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-        var skill = await context.Skills.FirstAsync(x => x.Id == data.SkillId);
-        
-
-        if (null != user.UserSkills.FirstOrDefault(x => x.Skill.Id == skill.Id))
+        if (userInfo == null || (!await IsAuthorized(userInfo)))
         {
-            Response.StatusCode = 400;
-            return Json(new { Ok = false, Error = "Alredy exists" });
+            return Forbid();
         }
 
-        user.UserSkills.Add(new UserSkill
+        var skill = await _context.Skills.FirstOrDefaultAsync(x => x.Id == data.SkillId);
+
+        if (skill == null)
+        {
+            return NotFound();
+        }
+
+        if (userInfo.UserSkills.Any(x => x.Skill.Id == skill.Id))
+        {
+            Response.StatusCode = 400;
+            return Json(new { Ok = false, Error = "Already exists" });
+        }
+
+        userInfo.UserSkills.Add(new UserSkill
         {
             Level = data.Level,
             Skill = skill,
-            UserInfo = user
+            UserInfo = userInfo
         });
 
-        await context.SaveChangesAsync();
-
+        await _context.SaveChangesAsync();
         return Json(new { Ok = true });
     }
-
-
-   
 
     [HttpPost]
     public async Task<IActionResult> Delete(int id)
     {
-        var userInfo = await context.UserInfos.FindAsync(id);
+        var userInfo = await _context.UserInfos.FindAsync(id);
 
-        if (userInfo != null)
+        if (userInfo != null && (await IsAuthorized(userInfo)))
         {
             foreach (var image in userInfo.ImageFiles)
             {
-                await fileStorage.DeleteAsync(image);
+                await _fileStorage.DeleteAsync(image);
             }
 
-            context.UserInfos.Remove(userInfo);
-            await context.SaveChangesAsync();
+            _context.UserInfos.Remove(userInfo);
+            await _context.SaveChangesAsync();
         }
 
         return RedirectToAction("Index");
     }
 
-
-
+    private async Task<bool> IsAuthorized(UserInfo userInfo)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+        return isAdmin || userInfo.UserId == user.Id;
+    }
 }
