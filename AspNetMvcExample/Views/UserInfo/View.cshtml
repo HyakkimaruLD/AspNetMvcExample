@@ -61,6 +61,49 @@
         </div>
     }
 
+    <div class="mt-4">
+        <h3>Reviews</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            @foreach (var review in Model.Reviews)
+            {
+                <div class="col">
+                    <div class="card shadow-sm border-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">User Id: @review.UserId</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Rating: @review.Rating</h6>
+                            <p class="card-text">@review.Comment</p>
+                            <div class="text-muted small">@review.CreatedAt.ToString("dd.MM.yyyy")</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="mt-4">
+            <h4>Leave a Review</h4>
+            <form id="review-form">
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating</label>
+                    <select id="rating" class="form-select">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comment</label>
+                    <textarea id="comment" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    }
+
     <div class="mt-4 text-center">
         <a asp-area=""
            asp-controller="UserInfo"
@@ -82,8 +125,33 @@
                 fetch(`/UserInfo/ChangeMainImage/${itemId}?imageId=${imageId}`)
                     .then(() => {
                         window.location.reload();
-                    })
-            })
-        })
+                    });
+            });
+        });
+
+        document.getElementById("review-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const rating = document.getElementById("rating").value;
+            const comment = document.getElementById("comment").value;
+            const userId = @Model.Id;
+
+            const data = {
+                Rating: rating,
+                Comment: comment
+            };
+
+            fetch(`/user-infos-data/AddReview/${userId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }).then(() => {
+                window.location.reload();
+            }).catch(err => {
+                console.log(err);
+            });
+        });
     </script>
 }

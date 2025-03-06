@@ -18,7 +18,6 @@
                        value="@Context.Request.Query["searchText"]" />
             </div>
         </div>
-
         <div class="col-md-2">
             <select class="form-select" id="profession-options">
                 <option value="">All Professions</option>
@@ -30,7 +29,6 @@
                 }
             </select>
         </div>
-
         <div class="col-md-2">
             <select class="form-select" id="skill-options">
                 <option value="">All Skills</option>
@@ -42,7 +40,6 @@
                 }
             </select>
         </div>
-
         <div class="col-md-2">
             <select class="form-select" id="experience-options">
                 <option value="">All Experience</option>
@@ -52,7 +49,6 @@
                 <option value="5+" selected="@(Context.Request.Query["experienceRange"] == "5+" ? "selected" : null)">5+</option>
             </select>
         </div>
-
         <div class="col-md-2">
             <select class="form-select" id="age-options">
                 <option value="">All Ages</option>
@@ -62,7 +58,6 @@
                 <option value="36+" selected="@(Context.Request.Query["ageRange"] == "36+" ? "selected" : null)">36+</option>
             </select>
         </div>
-
         <div class="col-12 text-center mt-2">
             <button type="button" class="btn btn-primary mx-1" id="find-btn"><i class="bi bi-funnel"></i> Find</button>
             <button type="button" class="btn btn-outline-secondary mx-1" id="clear-btn"><i class="bi bi-x-circle"></i> Clear</button>
@@ -74,7 +69,26 @@
     @foreach (var user in Model)
     {
         <div class="col-md-3 mb-3">
-            @await Html.PartialAsync("_UserInfoCard", user)
+            <div class="d-flex flex-column gap-2">
+                @await Html.PartialAsync("_UserInfoCard", user)
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <form id="review-form-@user.Id" class="p-2 border rounded">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="rating-@user.Id" class="form-label mb-0">⭐</label>
+                            <select id="rating-@user.Id" class="form-select form-select-sm w-auto">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                            <input id="comment-@user.Id" type="text" class="form-control form-control-sm" placeholder="Write a comment...">
+                            <button type="submit" class="btn btn-sm btn-primary">✔</button>
+                        </div>
+                    </form>
+                }
+            </div>
         </div>
     }
 </div>
@@ -105,5 +119,32 @@
 
             window.location.href = '@Url.Action("Index", "Home")';
         });
+
+        document.querySelectorAll("[id^='review-form-']").forEach(form => {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const userId = this.id.split('-')[2]
+                const rating = this.querySelector(`#rating-${userId}`).value
+                const comment = this.querySelector(`#comment-${userId}`).value
+
+                const data = {
+                    Rating: rating,
+                    Comment: comment
+                }
+
+                fetch(`/user-infos-data/AddReview/${userId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                }).then(() => {
+                    window.location.reload()
+                }).catch(err => {
+                    console.log(err)
+                })
+            })
+        })
     </script>
 }

@@ -12,7 +12,6 @@ namespace AspNetMvcExample.Models
 
         //public virtual ICollection<UserInfo> Infos { get; set;  }
 
-        // Добавляем связь с информацией о пользователе
         public virtual ICollection<UserInfo> UserInfos { get; set; }
     }
 }

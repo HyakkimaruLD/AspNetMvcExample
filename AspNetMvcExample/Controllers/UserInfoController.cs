@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace AspNetMvcExample.Controllers;
-
 //[Authorize(Roles = "Admin, User")]
 [Route(template: "user-infos-data/[action]/{id:int?}")]
 public class UserInfoController : Controller
@@ -50,6 +50,7 @@ public class UserInfoController : Controller
             .ThenInclude(x => x.Skill)
             .Include(x => x.ImageFiles)
             .Include(x => x.MainImageFile)
+            .Include(x => x.Reviews)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (userInfo == null || (!await IsAuthorized(userInfo)))
@@ -234,6 +235,32 @@ public class UserInfoController : Controller
         });
 
         await _context.SaveChangesAsync();
+        return Json(new { Ok = true });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddReview(int id, [FromBody] ReviewForm reviewForm)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        var userInfo = await _context.UserInfos.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (userInfo == null)
+        {
+            return NotFound();
+        }
+
+        var review = new Review
+        {
+            UserInfoId = id,
+            UserId = user.Id,
+            UserName = user.FullName,
+            Comment = reviewForm.Comment,
+            Rating = reviewForm.Rating
+        };
+
+        _context.Reviews.Add(review);
+        await _context.SaveChangesAsync();
+
         return Json(new { Ok = true });
     }
 

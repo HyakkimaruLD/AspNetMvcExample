@@ -41,8 +41,10 @@ public class UserInfo
     [ForeignKey(nameof(MainImageFileId))]
     public virtual ImageFile? MainImageFile { get; set; }
 
-        // Добавляем связь с пользователем
     public int? UserId { get; set; }
     [ForeignKey("UserId")]
     public virtual User? User { get; set; }
+
+
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

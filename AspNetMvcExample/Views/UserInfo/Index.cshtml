@@ -16,7 +16,7 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Profession</th>
-                <th>Author</th> <!-- Добавляем столбец "Author" -->
+                <th>Author</th> 
                 <th></th>
             </tr>
         </thead>
@@ -45,7 +45,7 @@
                     <td>@item.Name</td>
                     <td>@item.Email</td>
                     <td>@item.Profession</td>
-                    <td>@(item.User != null ? item.User.Email : "No User")</td> <!-- Добавляем отображение автора с проверкой на null -->
+                    <td>@(item.User != null ? item.User.Email : "No User")</td>
                     <td>
                         <a asp-area=""
                            asp-controller="UserInfo"
