@@ -62,7 +62,7 @@
     }
 
     <div class="mt-4">
-        <h3>Reviews</h3>
+        <h3>Reviews:</h3>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
             @foreach (var review in Model.Reviews)
             {
@@ -79,7 +79,7 @@
             }
         </div>
     </div>
-
+@* 
     @if (User.Identity.IsAuthenticated)
     {
         <div class="mt-4">
@@ -102,7 +102,7 @@
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
-    }
+    } *@
 
     <div class="mt-4 text-center">
         <a asp-area=""
@@ -129,29 +129,29 @@
             });
         });
 
-        document.getElementById("review-form").addEventListener("submit", function (e) {
-            e.preventDefault();
+        // document.getElementById("review-form").addEventListener("submit", function (e) {
+        //     e.preventDefault();
 
-            const rating = document.getElementById("rating").value;
-            const comment = document.getElementById("comment").value;
-            const userId = @Model.Id;
+        //     const rating = document.getElementById("rating").value;
+        //     const comment = document.getElementById("comment").value;
+        //     const userId = @Model.Id;
 
-            const data = {
-                Rating: rating,
-                Comment: comment
-            };
+        //     const data = {
+        //         Rating: rating,
+        //         Comment: comment
+        //     };
 
-            fetch(`/user-infos-data/AddReview/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            }).then(() => {
-                window.location.reload();
-            }).catch(err => {
-                console.log(err);
-            });
-        });
+        //     fetch(`/user-infos-data/AddReview/${userId}`, {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json"
+        //         },
+        //         body: JSON.stringify(data)
+        //     }).then(() => {
+        //         window.location.reload();
+        //     }).catch(err => {
+        //         console.log(err);
+        //     });
+        // });
     </script>
 }

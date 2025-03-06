@@ -242,23 +242,34 @@ public class UserInfoController : Controller
     public async Task<IActionResult> AddReview(int id, [FromBody] ReviewForm reviewForm)
     {
         var user = await _userManager.GetUserAsync(User);
-        var userInfo = await _context.UserInfos.FirstOrDefaultAsync(x => x.Id == id);
+        var userInfo = await _context.UserInfos
+            .Include(x => x.Reviews)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         if (userInfo == null)
         {
             return NotFound();
         }
 
-        var review = new Review
+        var existingReview = userInfo.GetUserReview(user.Id);
+        if (existingReview != null)
         {
-            UserInfoId = id,
-            UserId = user.Id,
-            UserName = user.FullName,
-            Comment = reviewForm.Comment,
-            Rating = reviewForm.Rating
-        };
+            existingReview.Rating = reviewForm.Rating;
+            existingReview.Comment = reviewForm.Comment;
+        }
+        else
+        {
+            var review = new Review
+            {
+                UserInfoId = id,
+                UserId = user.Id,
+                UserName = user.FullName,
+                Comment = reviewForm.Comment,
+                Rating = reviewForm.Rating
+            };
 
-        _context.Reviews.Add(review);
+            _context.Reviews.Add(review);
+        }
         await _context.SaveChangesAsync();
 
         return Json(new { Ok = true });

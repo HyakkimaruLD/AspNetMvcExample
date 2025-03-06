@@ -22,6 +22,7 @@ namespace AspNetMvcExample.Controllers
                 .Include(u => u.MainImageFile)
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
+                .Include(u => u.Reviews)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchText))

@@ -47,4 +47,9 @@ public class UserInfo
 
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+    public Review GetUserReview(int userId)
+    {
+        return Reviews.FirstOrDefault(r => r.UserId == userId);
+    }
 }

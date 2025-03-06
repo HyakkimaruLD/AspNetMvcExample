@@ -1,8 +1,5 @@
-﻿@* _UserInfoCard.cshtml *@
-
-@model UserInfo
+﻿@model AspNetMvcExample.Models.UserInfo
 @{
-
 }
 
 <div class="card" style="width: 18rem;">
@@ -15,6 +12,18 @@
         <h5 class="card-title">@Model.Name</h5>
         <h5 class="card-title">@Model.Profession</h5>
         <p class="card-text">@Model.Description</p>
+
+        <div class="rating">
+            @if (Model.Reviews.Any())
+            {
+                var averageRating = Model.Reviews.Average(r => r.Rating);
+                <p>Average Rating: @string.Format("{0:0.0}", averageRating)</p>
+            }
+            else
+            {
+                <p>No ratings</p>
+            }
+        </div>
 
         <div class="skills">
             @foreach (var userSkill in Model.UserSkills)
